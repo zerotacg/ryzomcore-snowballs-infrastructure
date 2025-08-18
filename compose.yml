@@ -1,0 +1,70 @@
+services:
+  tools:
+    image: "ghcr.io/zerotacg/ryzomcore-tools:latest"
+    volumes:
+      - ./config/nelns:/app/config
+    command:
+      - "-Cconfig"
+      - "-Llogs"
+
+  snowballs:
+    image: "ghcr.io/zerotacg/ryzomcore-snowballs:latest"
+    links:
+      - naming-service
+    volumes:
+      - ./config/snowballs:/app/config
+      - ./data:/app/data
+    command:
+      - "-Cconfig"
+      - "-Llogs"
+
+  naming-service:
+    extends:
+      service: tools
+    entrypoint: naming_service
+    expose:
+      - 50000
+
+  login-service:
+    extends:
+      service: tools
+    links:
+      - naming-service
+      - db
+    entrypoint: login_service
+
+  db:
+    image: mariadb:latest
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: snowballs
+      MARIADB_USER: snowballs
+      MARIADB_PASSWORD: snowballs
+      MARIADB_DATABASE: snowballs
+
+  chat-service:
+    extends:
+      service: snowballs
+    entrypoint: snowballs_chat_service
+
+  collision-service:
+    extends:
+      service: snowballs
+    entrypoint: snowballs_collision_service
+
+  frontend-service:
+    extends:
+      service: snowballs
+    entrypoint: snowballs_frontend_service
+    expose:
+      - 37000
+    command:
+      - "-Cconfig"
+      - "-Llogs"
+      - "-P51000"
+
+  position-service:
+    extends:
+      service: snowballs
+    entrypoint: snowballs_position_service
