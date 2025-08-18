@@ -37,6 +37,8 @@ services:
     image: mariadb:latest
     ports:
       - "3306:3306"
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
     environment:
       MARIADB_ROOT_PASSWORD: snowballs
       MARIADB_USER: snowballs
