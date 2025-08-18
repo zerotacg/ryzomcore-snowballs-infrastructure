@@ -1,0 +1,1 @@
+# ryzomcore-snowballs-infrastructure
