@@ -19,7 +19,18 @@ $(cd build && 7z x client.7z)
 
 get required data
 ```bash
-mv build/snowballs*/
+cp --recursive build/snowballs*/data/* data/
+```
+
+## startup
+start docker containers
+```bash
+docker compose up
+```
+
+update shard to `snowballs` application
+```sql
+update shard set ClientApplication = 'snowballs' where ShardId = '300';
 ```
 
 ## TODO

@@ -1,25 +1,7 @@
 services:
-  nelns:
-    image: "ghcr.io/zerotacg/ryzomcore-nelns:latest"
-    volumes:
-      - ./config/nelns:/app/config
-    command:
-      - "-Cconfig"
-      - "-Llogs"
-
-  snowballs:
-    image: "ghcr.io/zerotacg/ryzomcore-snowballs:latest"
-    links:
-      - naming-service
-    volumes:
-      - ./config/snowballs:/app/config
-      - ./data:/app/data
-    command:
-      - "-Cconfig"
-      - "-Llogs"
-
   naming-service:
     extends:
+      file: common.yml
       service: nelns
     entrypoint: naming_service
     expose:
@@ -27,11 +9,27 @@ services:
 
   login-service:
     extends:
+      file: common.yml
       service: nelns
-    links:
-      - naming-service
-      - db
+    expose:
+      - 49997
+    ports:
+      - "49997:49997"
+    depends_on:
+      db:
+        condition: service_healthy
     entrypoint: login_service
+
+  welcome-service:
+    extends:
+      file: common.yml
+      service: nelns
+    expose:
+      - 49999
+    depends_on:
+      login-service:
+        condition: service_started
+    entrypoint: welcome_service
 
   db:
     image: mariadb:latest
@@ -44,19 +42,28 @@ services:
       MARIADB_USER: snowballs
       MARIADB_PASSWORD: snowballs
       MARIADB_DATABASE: snowballs
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   chat-service:
     extends:
+      file: common.yml
       service: snowballs
     entrypoint: snowballs_chat_service
 
   collision-service:
     extends:
+      file: common.yml
       service: snowballs
     entrypoint: snowballs_collision_service
 
   frontend-service:
     extends:
+      file: common.yml
       service: snowballs
     entrypoint: snowballs_frontend_service
     expose:
@@ -68,5 +75,6 @@ services:
 
   position-service:
     extends:
+      file: common.yml
       service: snowballs
     entrypoint: snowballs_position_service

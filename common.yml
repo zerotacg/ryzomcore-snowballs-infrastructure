@@ -1,0 +1,19 @@
+services:
+  nelns:
+    image: "ghcr.io/zerotacg/ryzomcore-nelns:latest"
+    volumes:
+      - ./config/nelns:/app/config
+    command:
+      - "-Cconfig"
+      - "-Llogs"
+
+  snowballs:
+    image: "ghcr.io/zerotacg/ryzomcore-snowballs:latest"
+    links:
+      - naming-service
+    volumes:
+      - ./config/snowballs:/app/config
+      - ./data:/app/data
+    command:
+      - "-Cconfig"
+      - "-Llogs"
