@@ -19,7 +19,9 @@ $(cd build && 7z x client.7z)
 
 get required data
 ```bash
-cp --recursive build/snowballs*/data/* data/
+mkdir --parents data/zones
+cp --recursive build/snowballs*/data/pacs data/
+cp --recursive build/snowballs*/data/zones/*.ig data/zones
 ```
 
 ## startup
@@ -31,6 +33,12 @@ docker compose up
 update shard to `snowballs` application
 ```sql
 update shard set ClientApplication = 'snowballs' where ShardId = '300';
+```
+
+## cleanup
+
+```bash
+docker compose down --volumes --remove-orphans
 ```
 
 ## TODO
