@@ -1,0 +1,33 @@
+@startuml
+skinparam responseMessageBelowArrow true
+
+participant client as "Client"
+participant ls as "Login Service"
+database db as "Database"
+participant ws as "Welcome Service"
+participant fes as "Frontend Service"
+
+ws -> fes : find suitable
+ws -> ls : register as shard
+
+client -> ls : connect
+ls -> client : VLP verify login password
+client --> ls : VLP (login, crypted password, application)
+alt successful case
+    ls -> db : update user state = 'Authorized', cookie
+    ls -> client : VLP ("", shard count, {shard name, player count, shard id}[])
+else some error
+    ls -> client : VLP (reason)
+end
+
+ls -> client : CS select shard
+client --> ls : CS (shard id)
+alt successful case
+    ls -> db : update user state = 'Waiting', shard = shard id
+else some error
+    ls -> client : SCS shard choose shard (reason)
+end
+
+ls -> ws : CS (cookie, login, privilege, extended privilege)
+
+@enduml
